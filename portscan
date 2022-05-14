@@ -1,0 +1,134 @@
+import pyfiglet
+from datetime import datetime
+import socket 
+from threading import Thread
+from colorama import init, Fore
+from time import sleep,time
+
+ascii_banner = pyfiglet.figlet_format("@official_alikhani")
+
+print(ascii_banner)
+print("-------------------------------------------------------------------")
+print("1 : RDP scan")
+print("2 : scan all port")
+print("3 : all port scan - range ip")
+print("4 : web port scan")
+number = input("select one:")
+check_count_thread=0
+list_open_ports=[]
+def createRange(ip,ip2):
+    range_one = int(ip.split('.')[-1])
+    range_two = int(ip2.split('.')[-1])+1
+    return range_one,range_two
+
+if number == "1" :
+    init()
+    GREEN = Fore.GREEN
+    RESET = Fore.RESET
+    GRAY = Fore.LIGHTBLACK_EX
+    lstrdp = [3389]
+    iplist = []
+    ip_ = input('start ip: ')
+    range_one,range_two = createRange(ip_,input('end ip: '))
+    ip = ''
+    for i in range(len(ip_.split('.'))-1):
+        ip += ip_.split('.')[i]+'.'
+    for host in range(range_one,range_two) :
+        iplist.append(ip+str(host))
+    def is_port_open(host, port):
+        s = socket.socket()
+        try:
+            s.connect((host, port))
+            s.settimeout(0.2)
+        except:
+            return False
+        else:
+            return True  
+    for ip in iplist:
+        for port in lstrdp:
+            if is_port_open(ip, port):
+                print(f"{GREEN}[+] {ip}:{port} is open      {RESET}")
+            else:
+                print(f"{GRAY}[!] {ip}:{port} is closed    {RESET}")        
+elif number == "2" :
+    init()
+    GREEN = Fore.GREEN
+    RESET = Fore.RESET
+    GRAY = Fore.LIGHTBLACK_EX
+    ip = input("enter ip : ")
+    def is_port_open(host, port):
+        global check_count_thread
+        s = socket.socket()
+        try:
+            s.connect((host, port))
+            s.settimeout(0.2)
+        except:
+            pass
+        else:
+            list_open_ports.append(port)
+        check_count_thread-=1
+    t1=time()
+    for port in range(1,65535):
+        Thread(target=is_port_open,args=(ip, port,)).start()
+        check_count_thread+=1
+        # print(port)
+        while check_count_thread>20000:
+            sleep(5)
+    while check_count_thread!=0:
+        sleep(5)
+    for port in list_open_ports:
+        print(f"{GREEN}[+] {ip}:{port} is open")
+    t2=time()
+    print('\nTime:',t2-t1)
+elif number == "3" :
+    init()
+    GREEN = Fore.GREEN
+    RESET = Fore.RESET
+    GRAY = Fore.LIGHTBLACK_EX
+    iplist = []
+    ip_ = input('start ip: ')
+    range_one,range_two = createRange(ip_,input('end ip: '))
+    ip = ''
+    for i in range(len(ip_.split('.'))-1):
+        ip += ip_.split('.')[i]+'.'
+
+    for host in range(range_one,range_two) :
+        iplist.append(ip+str(host))
+    def is_port_open(host, port):
+        s = socket.socket()
+        try:
+            s.connect((host, port))
+            s.settimeout(0.2)
+        except:
+            return False
+        else:
+            
+            return True
+    for ip in iplist:
+        for port in range(1,65535):
+            if is_port_open(ip, port):
+                print(f"{GREEN}[+] {ip}:{port} is open      {RESET}")
+            else:
+                print(f"{GRAY}[!] {ip}:{port} is closed    {RESET}")        
+elif number == "4" :
+    init()
+    GREEN = Fore.GREEN
+    RESET = Fore.RESET
+    GRAY = Fore.LIGHTBLACK_EX  
+    lstrdp = [80,443,8080,1080]
+    ip = input("enter ip: ")
+    def is_port_open(host, port):
+        s = socket.socket()
+        try:
+            s.connect((host, port))
+            s.settimeout(0.2)
+        except:
+            return False
+        else:
+            
+            return True   
+    for port in lstrdp:
+            if is_port_open(ip, port):
+                print(f"{GREEN}[+] {ip}:{port} is open      {RESET}")
+            else:
+                print(f"{GRAY}[!] {ip}:{port} is closed    {RESET}")        
